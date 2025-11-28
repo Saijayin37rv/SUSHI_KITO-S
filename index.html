@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SUSHI KITO'S | Menú Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ================= ESTILOS PERSONALIZADOS ================= */
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: #0f0f0f; 
+            color: #f3f3f3; 
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Colores de marca */
+        .text-brand { color: #ff6b35; }
+        .bg-brand { background-color: #ff6b35; }
+        .border-brand { border-color: #ff6b35; }
+        .bg-brand-gradient { background: linear-gradient(135deg, #ff6b35 0%, #ff8c61 100%); }
+
+        /* Efecto Vidrio (Glassmorphism) */
+        .glass {
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Animaciones de Entrada */
+        .fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        /* Hover Effects en Cards */
+        .product-card { transition: all 0.3s ease; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(255, 107, 53, 0.15); border-color: #ff6b35; }
+        .product-card .img-container { overflow: hidden; }
+        .product-card img { transition: transform 0.5s ease; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+        .product-card:hover img { transform: scale(1.05); }
+
+        /* Modales */
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); z-index: 100; 
+            display: flex; justify-content: center; align-items: center; 
+            opacity: 0; pointer-events: none; transition: opacity 0.3s; 
+            padding: 20px;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        
+        .modal-content { 
+            background: #1a1a1a; width: 100%; max-width: 500px; max-height: 85vh; 
+            overflow-y: auto; border-radius: 16px; padding: 24px; position: relative; 
+            transform: scale(0.9) translateY(20px); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); }
+
+        /* Scrollbar personalizado */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #121212; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #ff6b35; }
+
+        /* Botón Flotante con pulso */
+        .sticky-cart { 
+            position: fixed; bottom: 25px; right: 25px; z-index: 90; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            animation: bounceIn 0.5s;
+        }
+        @keyframes bounceIn { from { transform: scale(0); } to { transform: scale(1); } }
+        
+        /* Notificación Toast */
+        #toast {
+            visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 200; left: 50%; bottom: 90px; transform: translateX(-50%); font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s, bottom 0.3s; border-left: 4px solid #ff6b35;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 100px; }
+
+    </style>
+</head>
+<body class="pb-32 antialiased">
+
+    <header class="glass fixed w-full top-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <h1 class="text-2xl font-extrabold tracking-tighter text-white">
+                    SUSHI <span class="text-brand">KITO'S</span>
+                </h1>
+            </div>
+            <button onclick="openCart()" class="relative p-2 text-white hover:text-brand transition-colors">
+                <i class="fas fa-shopping-cart text-2xl"></i>
+                <span id="cart-count" class="absolute top-0 right-0 bg-brand text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full shadow-lg transform scale-0 transition-transform duration-200">0</span>
+            </button>
+        </div>
+    </header>
+
+    <section class="relative pt-32 pb-16 px-4 text-center overflow-hidden">
+        <div class="absolute inset-0 z-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=1470&auto=format&fit=crop')] bg-cover bg-center"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-[#0f0f0f] via-transparent to-[#0f0f0f] z-10"></div>
+        
+        <div class="relative z-20 max-w-2xl mx-auto fade-in-up">
+            <span class="text-brand font-bold tracking-widest text-sm uppercase mb-2 block">La Mejor Experiencia</span>
+            <h2 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">El Verdadero <br/>Sabor</h2>
+            <p class="text-gray-400 text-lg mb-6">Sushi fresco, mariscos y snacks preparados al momento.</p>
+            <button onclick="document.getElementById('menu-container').scrollIntoView({behavior: 'smooth'})" class="bg-white text-black font-bold py-3 px-8 rounded-full hover:bg-brand hover:text-white transition shadow-lg">
+                Ver Menú
+            </button>
+        </div>
+    </section>
+
+    <main id="menu-container" class="container mx-auto p-4 max-w-6xl"></main>
+
+    <footer class="bg-[#0a0a0a] text-gray-500 text-xs py-10 text-center mt-12 px-6 border-t border-gray-900">
+        <h3 class="text-xl font-bold text-white mb-2">SUSHI KITO'S</h3>
+        <p class="mb-6">&copy; 2025 Todos los derechos reservados.</p>
+        <div class="max-w-3xl mx-auto bg-[#151515] p-4 rounded-lg border border-gray-800 text-left md:text-center">
+            <strong class="text-gray-300 block mb-2"><i class="fas fa-shield-alt"></i> Aviso de Privacidad</strong>
+            <p class="leading-relaxed">
+                Los datos personales (nombre, domicilio, teléfono) solicitados en este formulario serán utilizados únicamente para la gestión y entrega de su pedido. No compartimos su información con terceros. Al realizar su pedido vía WhatsApp, usted acepta el uso de estos datos exclusivamente para fines de servicio y entrega.
+            </p>
+        </div>
+    </footer>
+
+    <div id="product-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button onclick="closeModal('product-modal')" class="absolute top-4 right-4 bg-gray-800 text-gray-400 hover:text-white w-8 h-8 rounded-full flex items-center justify-center transition"><i class="fas fa-times"></i></button>
+            <div id="modal-body">
+                </div>
+        </div>
+    </div>
+
+    <div id="cart-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button onclick="closeModal('cart-modal')" class="absolute top-4 right-4 bg-gray-800 text-gray-400 hover:text-white w-8 h-8 rounded-full flex items-center justify-center transition"><i class="fas fa-times"></i></button>
+            
+            <div class="flex items-center gap-3 mb-6 border-b border-gray-800 pb-4">
+                <i class="fas fa-shopping-bag text-brand text-2xl"></i>
+                <h3 class="text-2xl font-bold text-white">Tu Pedido</h3>
+            </div>
+            
+            <div id="cart-items" class="space-y-4 mb-6 max-h-[40vh] overflow-y-auto pr-2">
+                <div class="flex flex-col items-center justify-center py-10 text-gray-500">
+                    <i class="fas fa-utensils text-4xl mb-3 opacity-30"></i>
+                    <p>Tu carrito está vacío</p>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 p-4 rounded-lg mb-6 border border-gray-700">
+                <div class="flex justify-between text-xl font-bold text-white">
+                    <span>Total Estimado:</span>
+                    <span id="cart-total" class="text-brand">$0.00</span>
+                </div>
+                <div class="flex items-start gap-2 mt-3 text-xs text-yellow-500 bg-yellow-500/10 p-2 rounded">
+                    <i class="fas fa-shipping-fast mt-0.5"></i> 
+                    <p>El costo de envío se confirmará vía WhatsApp al enviar tu ubicación.</p>
+                </div>
+            </div>
+
+            <form id="checkout-form" onsubmit="sendToWhatsapp(event)" class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Tu Nombre</label>
+                    <div class="relative">
+                        <i class="fas fa-user absolute left-3 top-3.5 text-gray-500"></i>
+                        <input type="text" id="customer-name" required placeholder="Ej. Juan Pérez" class="w-full bg-[#121212] border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition">
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Dirección de Entrega</label>
+                    <div class="relative">
+                        <i class="fas fa-map-marker-alt absolute left-3 top-3.5 text-gray-500"></i>
+                        <textarea id="customer-address" required rows="2" placeholder="Calle, Número, Colonia..." class="w-full bg-[#121212] border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition"></textarea>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Método de Pago</label>
+                    <div class="relative">
+                        <i class="fas fa-money-bill-wave absolute left-3 top-3.5 text-gray-500"></i>
+                        <select id="payment-method" onchange="toggleBankDetails()" class="w-full bg-[#121212] border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition appearance-none">
+                            <option value="Efectivo">Efectivo (Pago contra entrega)</option>
+                            <option value="Transferencia">Transferencia</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="bank-details" class="hidden bg-gray-900/50 p-4 rounded-lg border border-gray-700 text-sm">
+                    <p class="text-brand font-bold mb-2">Datos para Transferencia:</p>
+                    <p class="text-gray-300"><span class="font-bold text-white">Banco:</span> Mercado Pago</p>
+                    <p class="text-gray-300 flex items-center gap-2">
+                        <span class="font-bold text-white">Tarjeta:</span>
+                        <span class="select-all bg-gray-700/50 px-2 py-1 rounded text-white text-base">5428785169028320</span> 
+                    </p>
+                    <p class="text-gray-300"><span class="font-bold text-white">Beneficiario:</span> Ludivina Gonzalez</p>
+                    <p class="text-xs text-gray-500 mt-2 italic">*Favor de enviar comprobante al confirmar el pedido.*</p>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Comentarios / Referencias</label>
+                    <div class="relative">
+                        <i class="fas fa-comment-alt absolute left-3 top-3.5 text-gray-500"></i>
+                        <textarea id="customer-comments" rows="2" placeholder="Casa color azul, portón negro..." class="w-full bg-[#121212] border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition"></textarea>
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-green-900/30 transition transform hover:-translate-y-1 flex items-center justify-center gap-2 text-lg">
+                    <i class="fab fa-whatsapp text-2xl"></i> Enviar Pedido
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <button onclick="openCart()" class="sticky-cart bg-brand-gradient text-white py-3 px-6 rounded-full shadow-2xl hover:scale-105 transition flex items-center gap-3 group">
+        <div class="bg-white/20 rounded-full p-2">
+            <i class="fas fa-shopping-bag group-hover:rotate-12 transition"></i>
+        </div>
+        <div class="flex flex-col items-start leading-none">
+            <span class="text-[10px] uppercase font-bold opacity-80">Total</span>
+            <span id="float-total" class="font-bold text-lg">$0</span>
+        </div>
+    </button>
+
+    <div id="toast"><i class="fas fa-check-circle text-brand mr-2"></i> Agregado al carrito</div>
+
+    <script>
+        // ==============================
+        // CONFIGURACIÓN Y DATOS
+        // ==============================
+        const WHATSAPP_NUMBER = '5218140150327'; 
+
+        const SAUCES = [
+          'BBQ', 'Hot BBQ', 'Mango Habanero', 'Salsa Picante', 'Buffalo', 'Extra Picante', 'Lemon Pepper'
+        ];
+
+        const SUSHI_FRESH = [
+          { name: 'Philadelphia roll', desc: 'Salmón rosado, queso philadelphia, pepino fresco' },
+          { name: 'Ginger Roll', desc: 'Salmón rosado, surimi, queso philadelphia, aguacate' },
+          { name: 'California Roll', desc: 'Surimi, aguacate, queso philadelphia, pepino fresco' },
+          { name: 'Camaron Roll', desc: 'Camarón, aguacate, queso philadelphia' },
+          { name: 'Sushi de vegetales', desc: 'Aguacate, zanahoria, mix lechugas, pepino fresco' },
+          { name: 'Uramaki de atún', desc: 'Atún fresco, aguacate, queso philadelphia' }
+        ];
+
+        const SUSHI_FRIED = [
+          { name: 'California Roll', desc: 'Frito. Surimi, aguacate, queso philadelphia, pepino fresco' },
+          { name: 'Camaron Roll', desc: 'Frito. Camarón, aguacate, queso philadelphia' },
+          { name: 'Uramaki de atún', desc: 'Frito. Atún fresco, aguacate, queso philadelphia' },
+          { name: 'Queso Roll', desc: 'Frito. Queso manchego, queso panela, queso philadelphia' }
+        ];
+
+        const CATALOG = [
+          {
+            section: 'MARISCOS',
+            items: [
+              { id: 'mariscos-camarones-empanizados', name: 'Platillo Camarones Empanizados', price: 150, image:'camarones_empanizados.jpg', desc: 'Camarones empanizados, arroz, papas a la francesa, ensalada.' },
+              { id: 'mariscos-filete-empanizado', name: 'Platillo de Filete Empanizado', price: 150, image: 'filete_empanizado.jpg', desc: 'Filete empanizado, arroz, papas a la francesa, ensalada.' },
+              { id: 'mariscos-mixto-empanizado', name: 'Platillo Mixto Empanizado', price: 160, image: 'mixto_empanizado.jpg', desc: 'Filete y camarones empanizados, arroz, papas, ensalada.' },
+              { id: 'mariscos-aguachile-chico', name: 'Aguachile Chico', price: 120, image: 'aguachile.jpg' },
+              { id: 'mariscos-aguachile-grande', name: 'Aguachile Grande', price: 190, image: 'aguachile.jpg' },
+              { id: 'mariscos-coctel-camarones-1-2', name: 'Coctel de Camarones 1/2 litro', price: 95, image: 'coctel_camaron.jpg' },
+              { id: 'mariscos-coctel-camarones-1', name: 'Coctel de Camarones 1 litro', price: 180, image: 'coctel_camaron.jpg' },
+              { id: 'mariscos-ceviche-camaron-1-2', name: 'Ceviche de Camarón 1/2 litro', price: 120, image: 'ceviche_camaron.jpg' },
+              { id: 'mariscos-ceviche-camaron-1', name: 'Ceviche de Camarón 1 litro', price: 220, image: 'ceviche_camaron.jpg' },
+              { id: 'mariscos-ceviche-1-2', name: 'Ceviche 1/2 litro', price: 95, image: 'ceviche.jpg' },
+              { id: 'mariscos-ceviche-1', name: 'Ceviche 1 litro', price: 180, image: 'ceviche.jpg' }
+            ]
+          },
+          {
+            section: 'BONELESS & ALITAS',
+            items: [
+              { id: 'boneless-250', name: 'Boneless 250 g', price: 135, image: 'boneless.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' },
+              { id: 'boneless-500', name: 'Boneless 500 g', price: 170, image: 'boneless.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' },
+              { id: 'boneless-1000', name: 'Boneless 1 kg', price: 260, image: 'boneless.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' },
+              { id: 'alitas-250', name: 'Alitas 250 g', price: 135, image: 'alitas.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' },
+              { id: 'alitas-500', name: 'Alitas 500 g', price: 170, image: 'alitas.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' },
+              { id: 'alitas-1000', name: 'Alitas 1 kg', price: 260, image: 'alitas.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' }
+            ]
+          },
+          {
+            section: 'HAMBURGUESAS & HOT DOGS',
+            items: [
+              { id: 'hotdog-jumbo-1', name: 'Hot Dog Jumbo (1 pza)', price: 70, image: 'hotdog1.jpg', desc: 'Incluye papas a la francesa.' },
+              { id: 'hotdog-jumbo-2', name: 'Hot Dog Jumbo (2 pzas)', price: 120, image: 'hotdog.jpg', desc: 'Incluye papas a la francesa.' },
+              { id: 'hamburguesa-res', name: 'Hamburguesa de Res', price: 60, image: 'hamburguesa_res_tocino.jpg', desc: 'Res, jamón, quesos, tomate, cebolla, aguacate, lechuga.', options: { friesDelta: 25 } },
+              { id: 'hamburguesa-res-doble', name: 'Hamburguesa Doble de Res', price: 90, image: 'hamburguesa_res_tocino.jpg', desc: 'Doble carne, doble jamón, doble queso.', options: { friesDelta: 25 } },
+              { id: 'hamburguesa-res-tocino', name: 'Hamburguesa de Res con Tocino', price: 80, image: 'hamburguesa_res_tocino.jpg', desc: 'Res con tocino, jamón, quesos, verduras.', options: { friesDelta: 25 } },
+              { id: 'hamburguesa-pollo', name: 'Hamburguesa de Pollo', price: 90, image: 'hamburguesa_pollo.jpg', desc: 'Pechuga empanizada, queso, verduras, ranch.', options: { friesDelta: 25, customSauce: true } },
+              { id: 'hamburguesa-pollo-tocino', name: 'Hamburguesa de Pollo con Tocino', price: 110, image: 'hambrguesa_pollo_tocino.jpg', desc: 'Pechuga empanizada, tocino, queso, ranch.', options: { friesDelta: 25, customSauce: true } }
+            ]
+          },
+          {
+            section: 'SUSHI',
+            items: [
+              { id: 'sushi-individual', name: 'Sushi Individual', price: 95, image: 'sushi_individual.jpg', desc: '1 rollo a elegir (fresco o frito).', options: { sushi: 'individual' } },
+              { id: 'sushi-combo-1', name: 'Sushi Combo 1', price: 200, image: 'sushi_combo1.jpg', desc: '1 rollo frito y 2 frescos, arroz frito, papas.', options: { sushi: 'combo1' } },
+              { id: 'sushi-combo-2', name: 'Sushi Combo 2', price: 180, image: 'sushi_combo2.jpg', desc: '2 rollos a elegir (frescos o fritos), arroz, papas.', options: { sushi: 'combo2' } },
+              { id: 'sushi-combo-3', name: 'Sushi Combo 3', price: 125, image: 'sushi_combo3.jpg', desc: '1 rollo a elegir, arroz, papas.', options: { sushi: 'combo3' } }
+            ]
+          },
+          {
+            section: 'POLLO FRITO',
+            items: [
+              { id: 'pollo-pieza', name: 'Pieza individual', price: 18, image: 'pollo_frito.jpg' },
+              { id: 'pollo-paquete-1', name: 'Paquete 1 (2 pzas)', price: 45, image: 'pollo_frito.jpg', desc: 'Incluye porción de spaghetti o puré.', options: { side: true } },
+              { id: 'pollo-paquete-2', name: 'Paquete 2 (3 pzas)', price: 65, image: 'pollo_frito.jpg', desc: 'Incluye porción de spaghetti o puré.', options: { side: true } },
+              { id: 'pollo-paquete-3', name: 'Paquete 3 (6 pzas)', price: 130, image: 'pollo_frito.jpg', desc: 'Incluye 1/2 de spaghetti o puré.', options: { side: true } },
+              { id: 'pollo-paquete-4', name: 'Paquete 4 (8 pzas)', price: 170, image: 'pollo_frito.jpg', desc: 'Incluye 1/2 de spaghetti o puré.', options: { side: true } },
+              { id: 'pollo-paquete-5', name: 'Paquete 5 (10 pzas)', price: 200, image: 'pollo_frito.jpg', desc: 'Incluye 1/2 de spaghetti o puré.', options: { side: true } },
+              { id: 'pollo-paquete-6', name: 'Paquete 6 (12 pzas)', price: 230, image: 'pollo_frito.jpg', desc: 'Incluye 1/2 de spaghetti o puré.', options: { side: true } }
+            ]
+          },
+          {
+            section: 'BEBIDAS',
+            items: [
+                { id: 'bebida-coca-600', name: 'Coca cola 600 ml', price: 25,image:'coca600.jpg'},
+                { id: 'bebida-fuze-negro-600', name: 'Fuze tea Negro 600 ml', price: 25, image:'fuzelimon.jpg' },
+                { id: 'bebida-coca-2-5l', name: 'Coca cola 2.5 lt', price: 60,image:'coca2medio.jpg' },
+                { id: 'bebida-agua-ciel-1l', name: 'Agua Ciel 1 litro', price: 20, image:'agua1lt.jpg' },
+                { id: 'bebida-joyas', name: 'Joyas (Sabores)', price: 25,image:'joyadurazno.png', options: { flavors: ['Manzana', 'Durazno', 'Ponche'] } }
+            ]
+          },
+          {
+            section: 'EXTRAS',
+            items: [
+                { id: 'extra-arroz', name: '1/2 arroz blanco', price: 45,image:'arroz_extra.jpg' },
+                { id: 'extra-spaghetti', name: '1/2 spaghetti', price: 45,image:'extra_spaguetti.jpg' },
+                { id: 'extra-pure', name: '1/2 puré de papa', price: 45,image:'extra_pure.jpg' },
+                { id: 'extra-papas', name: 'Orden papas francesa', price: 45,image:'extra_papas.jpg' }
+            ]
+          }
+        ];
+
+        // ==============================
+        // LÓGICA DE APLICACIÓN
+        // ==============================
+        let cart = [];
+        let currentItem = null;
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMenu();
+        });
+
+        // Renderizar Menú con Mejor Diseño
+        function renderMenu() {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+
+            CATALOG.forEach((cat, index) => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'mb-12 fade-in-up';
+                sectionDiv.style.animationDelay = `${index * 0.1}s`; // Efecto cascada
+                
+                let itemsHtml = '';
+                cat.items.forEach(item => {
+                    // Imagen placeholder si no hay url real (Fallback robusto)
+                    const imgUrl = item.image && item.image.length > 0 ? item.image : `https://placehold.co/600x400/1a1a1a/ff6b35?text=${encodeURIComponent(item.name)}`;
+                    
+                    // Fallback para error de carga de imagen local
+                    const errorAttr = `onerror="this.src='https://placehold.co/600x400/1a1a1a/ff6b35?text=Sin+Imagen'"`;
+
+                    itemsHtml += `
+                        <div class="product-card bg-[#1a1a1a] rounded-xl shadow-lg border border-gray-800 overflow-hidden flex flex-col h-full group">
+                            <div class="img-container h-64 w-full relative">
+                                <img src="${imgUrl}" alt="${item.name}" ${errorAttr} loading="lazy">
+                                <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black to-transparent">
+                                    <span class="bg-brand text-white text-xs font-bold px-2 py-1 rounded shadow-md">$${item.price}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="p-5 flex flex-col flex-grow relative">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="font-bold text-lg text-white leading-tight group-hover:text-brand transition-colors">${item.name}</h3>
+                                </div>
+                                <p class="text-gray-400 text-sm mb-6 line-clamp-2 flex-grow">${item.desc || 'Delicioso platillo preparado al momento.'}</p>
+                                
+                                <button onclick='initAddToCart(${JSON.stringify(item)})' class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-brand hover:text-white transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg flex items-center justify-center gap-2">
+                                    <i class="fas fa-plus"></i> Agregar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                sectionDiv.innerHTML = `
+                    <h3 class="text-3xl font-extrabold mb-6 text-white border-l-4 border-brand pl-4 flex items-center gap-3">
+                        ${cat.section} 
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        ${itemsHtml}
+                    </div>
+                `;
+                container.appendChild(sectionDiv);
+            });
+        }
+
+        // ==============================
+        // MODAL DE PERSONALIZACIÓN
+        // ==============================
+        function initAddToCart(item) {
+            currentItem = item;
+            const modalBody = document.getElementById('modal-body');
+            let optionsHtml = '';
+
+            // Lógica Salsas
+            if (item.options && item.options.sauce === true) {
+                optionsHtml += createSelect('Elige tu salsa:', 'selected_sauce', SAUCES);
+            }
+            if (item.options && item.options.customSauce) {
+                optionsHtml += createSelect('Salsa para la hamburguesa:', 'selected_sauce', ['BBQ', 'Mango Habanero', 'Salsa Picante', 'Sin Salsa']);
+            }
+
+            // Lógica Papas
+            if (item.options && item.options.friesDelta) {
+                optionsHtml += `
+                    <div class="mb-5 bg-gray-800 p-4 rounded-lg border border-gray-700">
+                        <label class="flex items-center space-x-3 cursor-pointer w-full">
+                            <input type="checkbox" id="extra_fries" class="form-checkbox h-6 w-6 text-orange-600 rounded bg-gray-700 border-gray-600 focus:ring-orange-500">
+                            <span class="text-white font-medium flex-1">Agrandar papas</span>
+                            <span class="text-brand font-bold text-sm">+$${item.options.friesDelta}</span>
+                        </label>
+                    </div>
+                `;
+            }
+
+            // Lógica Guarnición
+            if (item.options && item.options.side) {
+                optionsHtml += createSelect('Elige tu complemento:', 'selected_side', ['Spaghetti', 'Puré de Papa']);
+            }
+            
+            // Lógica Sabores
+             if (item.options && item.options.flavors) {
+                optionsHtml += createSelect('Elige el sabor:', 'selected_flavor', item.options.flavors);
+            }
+
+            // Lógica Sushi
+            if (item.options && item.options.sushi) {
+                const type = item.options.sushi;
+                if (type === 'individual' || type === 'combo3') {
+                    optionsHtml += createLabel('Selecciona tu Rollo:');
+                    optionsHtml += createSelect(null, 'sushi_roll_1', [...SUSHI_FRESH.map(s=>s.name + ' (Fresco)'), ...SUSHI_FRIED.map(s=>s.name + ' (Frito)')]);
+                }
+                else if (type === 'combo1') {
+                    optionsHtml += createLabel('Arma tu combo (1 Frito, 2 Frescos):');
+                    optionsHtml += createSelect('Rollo 1 (Frito):', 'sushi_roll_1', SUSHI_FRIED.map(s=>s.name));
+                    optionsHtml += createSelect('Rollo 2 (Fresco):', 'sushi_roll_2', SUSHI_FRESH.map(s=>s.name));
+                    optionsHtml += createSelect('Rollo 3 (Fresco):', 'sushi_roll_3', SUSHI_FRESH.map(s=>s.name));
+                }
+                else if (type === 'combo2') {
+                    const allRolls = [...SUSHI_FRESH.map(s=>s.name + ' (Fresco)'), ...SUSHI_FRIED.map(s=>s.name + ' (Frito)')];
+                    optionsHtml += createLabel('Arma tu combo (2 Rollos a elegir):');
+                    optionsHtml += createSelect('Rollo 1:', 'sushi_roll_1', allRolls);
+                    optionsHtml += createSelect('Rollo 2:', 'sushi_roll_2', allRolls);
+                }
+            }
+
+            // Fallback para imagen en modal
+            const imgUrl = item.image && item.image.length > 0 ? item.image : `https://placehold.co/150x150/333/fff?text=IMG`;
+
+            modalBody.innerHTML = `
+                <div class="flex items-center gap-5 mb-6 pb-6 border-b border-gray-800">
+                     <img src="${imgUrl}" class="w-24 h-24 rounded-lg object-cover shadow-lg border border-gray-700" onerror="this.src='https://placehold.co/150x150/333/fff?text=IMG'">
+                     <div>
+                        <h3 class="text-2xl font-bold text-white leading-tight">${item.name}</h3>
+                        <p class="text-brand text-xl font-bold mt-1">$${item.price}</p>
+                     </div>
+                </div>
+                <div class="mb-6 text-gray-400 text-sm bg-gray-900/50 p-3 rounded border-l-2 border-gray-700 italic">${item.desc || 'Personaliza tu pedido a continuación.'}</div>
+                
+                <form id="add-form" onsubmit="confirmAddToCart(event)">
+                    ${optionsHtml}
+                    
+                    <div class="mt-6 mb-4">
+                        <label class="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-wide">Nota especial (Opcional)</label>
+                        <input type="text" id="item_note" placeholder="Ej: Sin cebolla, aderezo aparte..." class="w-full bg-[#121212] border border-gray-700 rounded-lg p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand transition">
+                    </div>
+
+                    <div class="flex items-center justify-between mt-8 bg-gray-800 p-3 rounded-lg border border-gray-700">
+                        <span class="text-white font-bold ml-2">Cantidad:</span>
+                        <div class="flex items-center bg-[#121212] rounded-lg p-1">
+                            <button type="button" onclick="adjustQty(-1)" class="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded text-white font-bold transition">-</button>
+                            <span id="modal-qty" class="font-bold text-xl w-10 text-center">1</span>
+                            <button type="button" onclick="adjustQty(1)" class="w-10 h-10 bg-brand hover:bg-orange-600 rounded text-white font-bold transition">+</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-brand-gradient text-white font-bold py-4 mt-6 rounded-xl hover:shadow-lg hover:shadow-orange-500/20 transition transform hover:-translate-y-1">
+                        Confirmar y Agregar
+                    </button>
+                </form>
+            `;
+
+            openModal('product-modal');
+        }
+
+        function createLabel(text) {
+             return `<p class="text-brand font-bold mb-3 uppercase text-sm tracking-wider">${text}</p>`;
+        }
+
+        function createSelect(label, id, optionsArray) {
+            let opts = optionsArray.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+            let labelHtml = label ? `<label class="block text-sm text-gray-300 mb-2 font-medium">${label}</label>` : '';
+            return `
+                <div class="mb-4">
+                    ${labelHtml}
+                    <div class="relative">
+                        <select id="${id}" class="appearance-none w-full bg-[#121212] border border-gray-700 rounded-lg p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand outline-none transition cursor-pointer">
+                            ${opts}
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        let modalQty = 1;
+        function adjustQty(delta) {
+            modalQty += delta;
+            if (modalQty < 1) modalQty = 1;
+            document.getElementById('modal-qty').innerText = modalQty;
+        }
+
+        function confirmAddToCart(e) {
+            e.preventDefault();
+            
+            // Recolectar opciones
+            let finalOptions = [];
+            let extraPrice = 0;
+
+            const sauceEl = document.getElementById('selected_sauce');
+            if (sauceEl) finalOptions.push(`Salsa: ${sauceEl.value}`);
+            
+            const sideEl = document.getElementById('selected_side');
+            if (sideEl) finalOptions.push(`Comple: ${sideEl.value}`);
+
+            const flavorEl = document.getElementById('selected_flavor');
+            if (flavorEl) finalOptions.push(`Sabor: ${flavorEl.value}`);
+
+            for(let i=1; i<=3; i++) {
+                const roll = document.getElementById(`sushi_roll_${i}`);
+                if (roll) finalOptions.push(`Rollo ${i}: ${roll.value}`);
+            }
+
+            const friesCheck = document.getElementById('extra_fries');
+            if (friesCheck && friesCheck.checked) {
+                extraPrice += currentItem.options.friesDelta;
+                finalOptions.push('Papas Agrandadas');
+            }
+
+            const note = document.getElementById('item_note').value;
+            if (note) finalOptions.push(`Nota: ${note}`);
+
+            const cartItem = {
+                ...currentItem,
+                qty: modalQty,
+                finalPrice: currentItem.price + extraPrice,
+                selectedOptions: finalOptions
+            };
+
+            cart.push(cartItem);
+            updateCartUI();
+            closeModal('product-modal');
+            showToast(); // Mostrar confirmación visual
+            modalQty = 1;
+        }
+
+        // ==============================
+        // GESTIÓN DEL CARRITO
+        // ==============================
+        function updateCartUI() {
+            const countEl = document.getElementById('cart-count');
+            const floatTotal = document.getElementById('float-total');
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartTotalEl = document.getElementById('cart-total');
+
+            const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
+            
+            // Animación del badge
+            if (totalItems > 0) {
+                countEl.innerText = totalItems;
+                countEl.classList.remove('scale-0');
+                countEl.classList.add('scale-100');
+            } else {
+                countEl.classList.add('scale-0');
+                countEl.classList.remove('scale-100');
+            }
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-10 text-gray-500">
+                        <i class="fas fa-utensils text-4xl mb-3 opacity-30"></i>
+                        <p>Tu carrito está vacío</p>
+                    </div>`;
+                floatTotal.innerText = '$0';
+                cartTotalEl.innerText = '$0.00';
+                return;
+            }
+
+            let html = '';
+            let total = 0;
+
+            cart.forEach((item, index) => {
+                const subtotal = item.finalPrice * item.qty;
+                total += subtotal;
+                
+                html += `
+                    <div class="flex justify-between items-start bg-[#121212] p-4 rounded-lg border border-gray-800 relative group transition hover:border-gray-600">
+                        <div class="pr-6">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="bg-brand text-white text-xs font-bold px-1.5 py-0.5 rounded">${item.qty}x</span>
+                                <p class="font-bold text-white text-lg">${item.name}</p>
+                            </div>
+                            <p class="text-xs text-gray-400 leading-relaxed mb-2 pl-7">${item.selectedOptions.join(', ')}</p>
+                            <div class="text-xs text-brand font-bold pl-7">$${item.finalPrice} c/u</div>
+                        </div>
+                        <div class="flex flex-col items-end justify-between h-full">
+                            <p class="font-bold text-white text-lg">$${subtotal}</p>
+                            <button onclick="removeFromCart(${index})" class="text-red-500 text-sm hover:text-red-400 mt-2 bg-red-500/10 p-2 rounded-full w-8 h-8 flex items-center justify-center transition hover:bg-red-500/20"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            cartItemsContainer.innerHTML = html;
+            floatTotal.innerText = `$${total}`;
+            cartTotalEl.innerText = `$${total}`;
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        // ==============================
+        // LÓGICA DE PAGO
+        // ==============================
+        function toggleBankDetails() {
+            const method = document.getElementById('payment-method').value;
+            const details = document.getElementById('bank-details');
+            if(method === 'Transferencia') {
+                details.classList.remove('hidden');
+            } else {
+                details.classList.add('hidden');
+            }
+        }
+
+        function sendToWhatsapp(e) {
+            e.preventDefault();
+            if (cart.length === 0) return alert('Agrega productos al carrito primero.');
+
+            const name = document.getElementById('customer-name').value;
+            const address = document.getElementById('customer-address').value;
+            const comments = document.getElementById('customer-comments').value;
+            const paymentMethod = document.getElementById('payment-method').value; // Obtener el método de pago
+
+            let message = `*🍣 NUEVO PEDIDO SUSHI KITO'S WEB*\n`;
+            message += `📅 Fecha: ${new Date().toLocaleDateString()}\n`;
+            message += `--------------------------------\n`;
+            message += `👤 *Cliente:* ${name}\n`;
+            message += `📍 *Dirección:* ${address}\n`;
+            
+            // Agregar el método de pago al mensaje
+            message += `💳 *Método de Pago:* ${paymentMethod}\n`; 
+            if(paymentMethod === 'Transferencia') {
+                message += `ℹ️ _Cliente debe enviar comprobante de pago por ${paymentMethod} al confirmar._\n`;
+            }
+            
+            if(comments) message += `📝 *Comentarios:* ${comments}\n`;
+            message += `--------------------------------\n`;
+            message += `*DETALLE DEL PEDIDO:*\n`;
+            
+            let total = 0;
+            cart.forEach(item => {
+                const subtotal = item.finalPrice * item.qty;
+                total += subtotal;
+                message += `▪️ *${item.qty}x ${item.name}*\n`;
+                if(item.selectedOptions.length > 0) {
+                    message += `   _(${item.selectedOptions.join(', ')})_\n`;
+                }
+                message += `   $${subtotal}\n`;
+            });
+
+            message += `--------------------------------\n`;
+            message += `💰 *TOTAL PRODUCTOS: $${total}*\n`;
+            message += `🛵 _(El costo de envío se calculará en este chat)_\n`;
+            message += `✅ Acepto el aviso de privacidad.`;
+
+            const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        // ==============================
+        // UTILIDADES UI
+        // ==============================
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+            document.body.style.overflow = 'hidden'; // Evitar scroll del body
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        function openCart() {
+            openModal('cart-modal');
+        }
+        
+        function showToast() {
+            const toast = document.getElementById("toast");
+            toast.className = "show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if(e.target === overlay) closeModal(overlay.id);
+            });
+        });
+
+    </script>
+</body>
+</html>
