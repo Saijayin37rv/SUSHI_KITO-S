@@ -448,9 +448,11 @@
                 }
                 else if (type === 'combo1') {
                     optionsHtml += createLabel('Arma tu combo (1 Frito, 2 Frescos):');
-                    optionsHtml += createSelect('Rollo 1 (Frito):', 'sushi_roll_1', SUSHI_FRIED.map(s=>s.name));
-                    optionsHtml += createSelect('Rollo 2 (Fresco):', 'sushi_roll_2', SUSHI_FRESH.map(s=>s.name));
-                    optionsHtml += createSelect('Rollo 3 (Fresco):', 'sushi_roll_3', SUSHI_FRESH.map(s=>s.name));
+                    // *** CORRECCIÓN APLICADA AQUÍ ***
+                    optionsHtml += createSelect('Rollo 1 (Frito):', 'sushi_roll_1', SUSHI_FRIED.map(s=>s.name + ' (Frito)'));
+                    optionsHtml += createSelect('Rollo 2 (Fresco):', 'sushi_roll_2', SUSHI_FRESH.map(s=>s.name + ' (Fresco)'));
+                    optionsHtml += createSelect('Rollo 3 (Fresco):', 'sushi_roll_3', SUSHI_FRESH.map(s=>s.name + ' (Fresco)'));
+                    // ********************************
                 }
                 else if (type === 'combo2') {
                     const allRolls = [...SUSHI_FRESH.map(s=>s.name + ' (Fresco)'), ...SUSHI_FRIED.map(s=>s.name + ' (Frito)')];
