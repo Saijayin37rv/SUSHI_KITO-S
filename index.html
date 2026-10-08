@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SUSHI KITO'S | Menú Digital</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -12,9 +12,17 @@
         /* ================= ESTILOS PERSONALIZADOS ================= */
         body { 
             font-family: 'Poppins', sans-serif; 
-            background-color: #0f0f0f; 
+            background:
+                radial-gradient(900px 420px at 100% -10%, rgba(255,107,53,.16), transparent 55%),
+                #0e0e0e;
             color: #f3f3f3; 
             -webkit-tap-highlight-color: transparent;
+        }
+
+        input, select, textarea { font-size: 16px; }
+        button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
+            outline: 2px solid #ff6b35;
+            outline-offset: 2px;
         }
 
         /* Colores de marca */
@@ -45,21 +53,33 @@
         /* Modales */
         .modal-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.85); z-index: 100; 
-            display: flex; justify-content: center; align-items: center; 
+            background: rgba(0,0,0,0.82); z-index: 100; 
+            display: flex; justify-content: center; align-items: flex-end; 
             opacity: 0; pointer-events: none; transition: opacity 0.3s; 
-            padding: 20px;
+            padding: 0;
         }
         .modal-overlay.active { opacity: 1; pointer-events: all; }
         
         .modal-content { 
-            background: #1a1a1a; width: 100%; max-width: 500px; max-height: 85vh; 
-            overflow-y: auto; border-radius: 16px; padding: 24px; position: relative; 
-            transform: scale(0.9) translateY(20px); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255,255,255,0.1);
+            background-color: #141414; width: 100%; max-width: 560px; max-height: 92vh; 
+            overflow-y: auto; border-radius: 22px 22px 0 0; padding: 18px 18px calc(28px + env(safe-area-inset-bottom)); position: relative; 
+            transform: translateY(28px); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
         }
-        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); }
+        .modal-content::before {
+            content: '';
+            display: block;
+            width: 42px; height: 4px; border-radius: 99px;
+            background: #3a3a3a; margin: 0 auto 14px;
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+
+        @media (min-width: 720px) {
+            .modal-overlay { align-items: center; padding: 24px; }
+            .modal-content { border-radius: 22px; transform: translateY(16px) scale(.98); }
+            .modal-content::before { display: none; }
+            .modal-overlay.active .modal-content { transform: none; }
+        }
 
         /* Scrollbar personalizado */
         ::-webkit-scrollbar { width: 6px; }
@@ -81,39 +101,250 @@
         }
         #toast.show { visibility: visible; opacity: 1; bottom: 100px; }
 
+        .top-stack {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(14, 14, 14, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .cat-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 4px 16px 12px;
+            scrollbar-width: none;
+        }
+        .cat-scroll::-webkit-scrollbar { display: none; }
+        .cat-btn {
+            flex: 0 0 auto;
+            border: 0;
+            background: #242424;
+            color: #e8e8e8;
+            border-radius: 999px;
+            min-height: 40px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .cat-btn.active { background: #ff6b35; color: #fff; }
+
+        .menu-intro, #menu-container, .site-footer-inner { max-width: 980px; margin-left: auto; margin-right: auto; }
+        .menu-intro { padding: 18px 16px 4px; }
+        .menu-intro h2 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; }
+        .menu-intro p { color: #9a9a9a; font-size: 14px; margin-top: 6px; max-width: 46ch; }
+        #menu-container { padding: 16px 16px 12px; scroll-margin-top: 120px; }
+
+        .section-kicker { color: #ff6b35; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+        .section-head h3 { font-size: 1.55rem; font-weight: 800; letter-spacing: -0.03em; margin-top: 2px; }
+        .section-head > p { color: #9a9a9a; font-size: 14px; margin-top: 4px; max-width: 48ch; }
+        .group-title { margin: 16px 2px 8px; font-size: 12px; font-weight: 700; color: #ffb089; letter-spacing: .06em; text-transform: uppercase; }
+        .dish-list { display: grid; gap: 10px; }
+        @media (min-width: 800px) {
+            .dish-list { grid-template-columns: 1fr 1fr; gap: 12px; }
+            .section-head h3 { font-size: 1.85rem; }
+        }
+
+        .dish {
+            display: grid;
+            grid-template-columns: 84px 1fr;
+            gap: 12px;
+            align-items: center;
+            padding: 10px;
+            background: #171717;
+            border-radius: 18px;
+        }
+        .dish-photo, .modal-photo {
+            position: relative; padding: 0; border: 0; overflow: hidden; background: #242424;
+        }
+        button.dish-photo, .modal-photo { cursor: zoom-in; }
+        .dish-photo { width: 84px; height: 84px; border-radius: 14px; }
+        .modal-photo { width: 80px; height: 80px; border-radius: 16px; flex: 0 0 auto; }
+        .dish-photo img, .modal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .zoom-hint {
+            position: absolute; right: 4px; bottom: 4px; width: 22px; height: 22px; border-radius: 50%;
+            background: rgba(0,0,0,.7); color: #fff; display: grid; place-items: center; font-size: 10px; pointer-events: none;
+        }
+
+        .photo-viewer {
+            position: fixed; inset: 0; z-index: 220; display: none;
+            align-items: center; justify-content: center;
+            padding: 64px 16px 28px; background: rgba(0,0,0,.94);
+        }
+        .photo-viewer.active { display: flex; }
+        .photo-viewer figure { margin: 0; max-width: min(920px, 100%); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .photo-viewer img {
+            max-width: 100%; max-height: min(74vh, 820px); width: auto; height: auto;
+            object-fit: contain; border-radius: 18px; background: #111;
+        }
+        .photo-caption { text-align: center; }
+        .photo-caption strong { display: block; font-size: 1.15rem; }
+        .photo-caption span { display: block; color: #c8c8c8; font-size: 14px; margin-top: 4px; }
+        .photo-close {
+            position: absolute; top: 14px; right: 14px; width: 44px; height: 44px; border: 0; border-radius: 50%;
+            background: #2a2a2a; color: #fff; font-size: 22px; line-height: 1;
+        }
+        .dish-fallback { width: 100%; height: 100%; display: grid; place-items: center; font-size: 28px; }
+        .dish-fallback[hidden] { display: none !important; }
+        .dish-body { min-width: 0; }
+        .dish-body h4 { font-weight: 700; font-size: 15px; line-height: 1.25; color: #fff; }
+        .dish-body > p {
+            color: #9a9a9a; font-size: 12px; line-height: 1.35; margin-top: 3px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .dish-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: 8px; }
+        .dish-price { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .dish-price strong { color: #ff6b35; font-size: 1.05rem; line-height: 1; }
+        .price-alt { color: #d0d0d0; font-size: 11px; line-height: 1.25; }
+        .dish-btn {
+            flex: 0 0 auto; min-height: 40px; min-width: 72px; border: 0; border-radius: 999px;
+            background: #ff6b35; color: #fff; font-weight: 700; font-size: 13px; padding: 0 14px;
+        }
+        .dish-btn-icon { width: 40px; min-width: 40px; padding: 0; border-radius: 50%; font-size: 16px; }
+        .dish-btn:active { transform: scale(.96); }
+
+        .option-card {
+            display: flex; align-items: center; gap: 12px; width: 100%;
+            background: #121212; border-radius: 14px; padding: 14px; margin-bottom: 12px; cursor: pointer;
+        }
+        .option-card input { width: 22px; height: 22px; accent-color: #ff6b35; flex: 0 0 auto; }
+        .submit-add {
+            width: 100%; background: linear-gradient(135deg, #ff6b35 0%, #ff8c61 100%);
+            color: #fff; font-weight: 700; min-height: 52px; border: 0; border-radius: 14px; margin-top: 16px; font-size: 16px;
+        }
+
+        .cart-bar {
+            position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 90;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            min-height: 56px; padding: 12px 16px; border: 0; border-radius: 16px; color: #fff;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c61 100%);
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.35);
+            transform: translateY(140%); opacity: 0; pointer-events: none;
+            transition: transform .35s cubic-bezier(.16,1,.3,1), opacity .25s;
+        }
+        .cart-bar.is-visible { transform: none; opacity: 1; pointer-events: auto; }
+        .cart-bar.is-hidden { opacity: 0 !important; pointer-events: none !important; }
+        .cart-bar-left { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+        #float-total { font-weight: 800; font-size: 1.15rem; }
+        @media (min-width: 800px) {
+            .cart-bar { left: auto; width: min(360px, calc(100% - 32px)); right: 20px; }
+        }
+
+        .cart-row {
+            display: flex; justify-content: space-between; gap: 12px;
+            background: #121212; border-radius: 14px; padding: 12px;
+        }
+        .cart-name { font-weight: 700; color: #fff; line-height: 1.3; }
+        .cart-opts, .cart-unit { color: #9a9a9a; font-size: 12px; margin-top: 4px; }
+        .cart-unit { color: #ff6b35; font-weight: 700; }
+        .cart-side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex: 0 0 auto; }
+        .qty-mini { display: flex; align-items: center; background: #1c1c1c; border-radius: 999px; }
+        .qty-mini button {
+            width: 36px; height: 36px; border: 0; background: transparent; color: #fff; font-size: 18px; font-weight: 700;
+        }
+        .qty-mini span { min-width: 16px; text-align: center; font-weight: 700; }
+
+        body.notice-open { overflow: hidden; }
+        .price-notice {
+            position: fixed; inset: 0; z-index: 400;
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+            background:
+                radial-gradient(700px 380px at 50% -10%, rgba(255,107,53,.28), transparent 60%),
+                rgba(8, 8, 8, .94);
+            backdrop-filter: blur(8px);
+        }
+        .price-notice.is-leaving { opacity: 0; transition: opacity .25s ease; }
+        .notice-card {
+            width: min(460px, 100%);
+            background: linear-gradient(180deg, #231813 0%, #161616 38%);
+            border: 1px solid rgba(255, 140, 90, .35);
+            border-radius: 28px;
+            padding: 28px 22px 22px;
+            box-shadow: 0 24px 60px rgba(0,0,0,.45);
+            text-align: center;
+            animation: fadeInUp .45s cubic-bezier(.16,1,.3,1) both;
+        }
+        .notice-mark {
+            width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 20px;
+            display: grid; place-items: center;
+            background: rgba(255,107,53,.15); color: #ff8c61; font-size: 26px;
+            border: 1px solid rgba(255,107,53,.35);
+        }
+        .notice-kicker {
+            color: #ff8c61; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+        }
+        .notice-card h2 {
+            margin-top: 8px; font-size: 1.7rem; line-height: 1.15; font-weight: 800; letter-spacing: -.03em;
+        }
+        .notice-lead { color: #ddd; font-size: 15px; line-height: 1.5; margin-top: 12px; }
+        .notice-points { list-style: none; margin: 18px 0 0; padding: 0; text-align: left; display: grid; gap: 10px; }
+        .notice-points li {
+            display: flex; gap: 10px; align-items: flex-start;
+            background: rgba(255,255,255,.04); border-radius: 14px; padding: 12px;
+            color: #ececec; font-size: 14px; line-height: 1.4;
+        }
+        .notice-points i { color: #ff6b35; margin-top: 2px; }
+        .notice-thanks {
+            margin-top: 16px; color: #ffd7c4; font-size: 14px; line-height: 1.45; font-weight: 600;
+        }
+        .notice-accept {
+            width: 100%; margin-top: 18px; min-height: 52px; border: 0; border-radius: 16px;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c61 100%);
+            color: #fff; font-weight: 800; font-size: 16px;
+            box-shadow: 0 10px 24px rgba(255,107,53,.35);
+        }
+        .notice-accept:active { transform: scale(.98); }
+        .notice-fine { margin-top: 10px; color: #8d8d8d; font-size: 12px; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .fade-in-up, .cart-bar, .modal-content, .notice-card { animation: none; transition: none; }
+        }
+
     </style>
 </head>
-<body class="pb-32 antialiased">
+<body class="pb-32 antialiased notice-open">
 
-    <header class="glass fixed w-full top-0 z-50 transition-all duration-300">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <h1 class="text-2xl font-extrabold tracking-tighter text-white">
+    <div id="price-notice" class="price-notice" role="dialog" aria-modal="true" aria-labelledby="notice-title">
+        <div class="notice-card">
+            <div class="notice-mark" aria-hidden="true"><i class="fas fa-tag"></i></div>
+            <p class="notice-kicker">Sushi Kito's · Aviso</p>
+            <h2 id="notice-title">Actualizamos algunos precios</h2>
+            <p class="notice-lead">Antes de armar tu pedido, revisa el menú. Varios platillos ya tienen precio nuevo y el que aparece aquí es el vigente.</p>
+            <ul class="notice-points">
+                <li><i class="fas fa-check-circle"></i><span>Lee el precio de cada platillo antes de agregarlo.</span></li>
+                <li><i class="fas fa-check-circle"></i><span>Si lleva papas, verás el precio sin papas y con papas.</span></li>
+                <li><i class="fas fa-check-circle"></i><span>Al aceptar, entras al menú con esta información.</span></li>
+            </ul>
+            <p class="notice-thanks">Gracias por preferirnos. Nos da gusto prepararte el pedido.</p>
+            <button type="button" class="notice-accept" onclick="acceptNotice()">Acepto el aviso</button>
+            <p class="notice-fine">Así evitamos confusiones con precios anteriores.</p>
+        </div>
+    </div>
+
+    <div class="top-stack">
+        <header class="glass">
+            <div class="menu-intro py-3 flex justify-between items-center" style="padding-bottom: 8px;">
+                <h1 class="text-xl sm:text-2xl font-extrabold tracking-tighter text-white">
                     SUSHI <span class="text-brand">KITO'S</span>
                 </h1>
+                <button onclick="openCart()" class="relative text-white hover:text-brand transition-colors" style="min-width:44px;min-height:44px;" aria-label="Ver pedido">
+                    <i class="fas fa-shopping-bag text-xl"></i>
+                    <span id="cart-count" class="absolute top-0 right-0 bg-brand text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full shadow-lg transform scale-0 transition-transform duration-200">0</span>
+                </button>
             </div>
-            <button onclick="openCart()" class="relative p-2 text-white hover:text-brand transition-colors">
-                <i class="fas fa-shopping-cart text-2xl"></i>
-                <span id="cart-count" class="absolute top-0 right-0 bg-brand text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full shadow-lg transform scale-0 transition-transform duration-200">0</span>
-            </button>
+        </header>
+        <div id="category-bar">
+            <div id="category-nav" class="cat-scroll" role="tablist" aria-label="Categorías del menú"></div>
         </div>
-    </header>
+    </div>
 
-    <section class="relative pt-32 pb-16 px-4 text-center overflow-hidden">
-        <div class="absolute inset-0 z-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=1470&auto=format&fit=crop')] bg-cover bg-center"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-[#0f0f0f] via-transparent to-[#0f0f0f] z-10"></div>
-        
-        <div class="relative z-20 max-w-2xl mx-auto fade-in-up">
-            <span class="text-brand font-bold tracking-widest text-sm uppercase mb-2 block">La Mejor Experiencia</span>
-            <h2 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">El Verdadero <br/>Sabor</h2>
-            <p class="text-gray-400 text-lg mb-6">Sushi fresco, mariscos y snacks preparados al momento.</p>
-            <button onclick="document.getElementById('menu-container').scrollIntoView({behavior: 'smooth'})" class="bg-white text-black font-bold py-3 px-8 rounded-full hover:bg-brand hover:text-white transition shadow-lg">
-                Ver Menú
-            </button>
-        </div>
-    </section>
-
-    <main id="menu-container" class="container mx-auto p-4 max-w-6xl"></main>
+    <main id="menu-container"></main>
 
     <footer class="bg-[#0a0a0a] text-gray-500 text-xs py-10 text-center mt-12 px-6 border-t border-gray-900">
         <h3 class="text-xl font-bold text-white mb-2">SUSHI KITO'S</h3>
@@ -216,15 +447,21 @@
         </div>
     </div>
 
-    <button onclick="openCart()" class="sticky-cart bg-brand-gradient text-white py-3 px-6 rounded-full shadow-2xl hover:scale-105 transition flex items-center gap-3 group">
-        <div class="bg-white/20 rounded-full p-2">
-            <i class="fas fa-shopping-bag group-hover:rotate-12 transition"></i>
-        </div>
-        <div class="flex flex-col items-start leading-none">
-            <span class="text-[10px] uppercase font-bold opacity-80">Total</span>
-            <span id="float-total" class="font-bold text-lg">$0</span>
-        </div>
+    <button id="cart-bar" onclick="openCart()" class="cart-bar" type="button">
+        <span class="cart-bar-left"><i class="fas fa-shopping-bag"></i> <span id="cart-bar-label">Ver pedido</span></span>
+        <span id="float-total">$0</span>
     </button>
+
+    <div id="photo-viewer" class="photo-viewer" hidden onclick="if (event.target === this) closePhoto()">
+        <button type="button" class="photo-close" onclick="closePhoto()" aria-label="Cerrar foto">&times;</button>
+        <figure>
+            <img id="photo-viewer-img" alt="">
+            <figcaption class="photo-caption">
+                <strong id="photo-viewer-name"></strong>
+                <span id="photo-viewer-meta"></span>
+            </figcaption>
+        </figure>
+    </div>
 
     <div id="toast"><i class="fas fa-check-circle text-brand mr-2"></i> Agregado al carrito</div>
 
@@ -257,81 +494,105 @@
         const CATALOG = [
           {
             section: 'MARISCOS',
+            short: 'Mariscos',
+            emoji: '🍤',
+            blurb: 'Platillos empanizados, aguachiles, cocteles y ceviches.',
             items: [
-              { id: 'mariscos-camarones-empanizados', name: 'Platillo Camarones Empanizados', price: 150, image:'camarones_empanizados.jpg', desc: 'Camarones empanizados, arroz, papas a la francesa, ensalada.' },
-              { id: 'mariscos-filete-empanizado', name: 'Platillo de Filete Empanizado', price: 150, image: 'filete_empanizado.jpg', desc: 'Filete empanizado, arroz, papas a la francesa, ensalada.' },
-              { id: 'mariscos-mixto-empanizado', name: 'Platillo Mixto Empanizado', price: 160, image: 'mixto_empanizado.jpg', desc: 'Filete y camarones empanizados, arroz, papas, ensalada.' },
-              { id: 'mariscos-aguachile-chico', name: 'Aguachile Chico', price: 120, image: 'aguachile.jpg' },
-              { id: 'mariscos-aguachile-grande', name: 'Aguachile Grande', price: 190, image: 'aguachile.jpg' },
-              { id: 'mariscos-coctel-camarones-1-2', name: 'Coctel de Camarones 1/2 litro', price: 95, image: 'ceviche_camaron.jpg' },
-              { id: 'mariscos-coctel-camarones-1', name: 'Coctel de Camarones 1 litro', price: 180, image: 'ceviche_camaron.jpg' },
-              { id: 'mariscos-ceviche-camaron-1-2', name: 'Ceviche de Camarón 1/2 litro', price: 120, image: 'coctel_camaron.jpg' },
-              { id: 'mariscos-ceviche-camaron-1', name: 'Ceviche de Camarón 1 litro', price: 220, image: 'coctel_camaron.jpg' },
-              { id: 'mariscos-ceviche-1-2', name: 'Ceviche 1/2 litro', price: 95, image: 'ceviche.jpg' },
-              { id: 'mariscos-ceviche-1', name: 'Ceviche 1 litro', price: 180, image: 'ceviche.jpg' }
+              { id: 'mariscos-camarones-empanizados', group: 'Platillos', name: 'Platillo Camarones Empanizados', price: 150, image:'camarones_empanizados.jpg', desc: 'Camarones empanizados, arroz, papas a la francesa, ensalada.' },
+              { id: 'mariscos-filete-empanizado', group: 'Platillos', name: 'Platillo de Filete Empanizado', price: 150, image: 'filete_empanizado.jpg', desc: 'Filete empanizado, arroz, papas a la francesa, ensalada.' },
+              { id: 'mariscos-mixto-empanizado', group: 'Platillos', name: 'Platillo Mixto Empanizado', price: 160, image: 'mixto_empanizado.jpg', desc: 'Filete y camarones empanizados, arroz, papas, ensalada.' },
+              { id: 'mariscos-aguachile-chico', group: 'Frescos', name: 'Aguachile Chico', price: 120, image: 'aguachile.jpg', desc: 'Porción chica.' },
+              { id: 'mariscos-aguachile-grande', group: 'Frescos', name: 'Aguachile Grande', price: 190, image: 'aguachile.jpg', desc: 'Porción grande.' },
+              { id: 'mariscos-coctel-camarones-1-2', group: 'Frescos', name: 'Coctel de Camarones 1/2 litro', price: 95, image: 'ceviche_camaron.jpg' },
+              { id: 'mariscos-coctel-camarones-1', group: 'Frescos', name: 'Coctel de Camarones 1 litro', price: 180, image: 'ceviche_camaron.jpg' },
+              { id: 'mariscos-ceviche-camaron-1-2', group: 'Frescos', name: 'Ceviche de Camarón 1/2 litro', price: 120, image: 'coctel_camaron.jpg' },
+              { id: 'mariscos-ceviche-camaron-1', group: 'Frescos', name: 'Ceviche de Camarón 1 litro', price: 220, image: 'coctel_camaron.jpg' },
+              { id: 'mariscos-ceviche-1-2', group: 'Frescos', name: 'Ceviche 1/2 litro', price: 95, image: 'ceviche.jpg' },
+              { id: 'mariscos-ceviche-1', group: 'Frescos', name: 'Ceviche 1 litro', price: 180, image: 'ceviche.jpg' }
             ]
           },
           {
-            section: 'BONELESS & ALITAS',
+            section: 'BONELESS',
+            short: 'Boneless',
+            emoji: '🔥',
+            blurb: 'Elige el tamaño y la salsa. Incluye papas, zanahoria, apio y aderezos.',
             items: [
               { id: 'boneless-250', name: 'Boneless 250 g', price: 135, image: 'boneless.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' },
-              { id: 'boneless-500', name: 'Boneless 500 g', price: 170, image: 'boneless.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' },
-              { id: 'boneless-1000', name: 'Boneless 1 kg', price: 260, image: 'boneless.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' },
+              { id: 'boneless-500', name: 'Boneless 500 g', price: 180, image: 'boneless.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' },
+              { id: 'boneless-1000', name: 'Boneless 1 kg', price: 290, image: 'boneless.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' }
+            ]
+          },
+          {
+            section: 'ALITAS',
+            short: 'Alitas',
+            emoji: '🍗',
+            blurb: 'Elige el tamaño y la salsa. Incluye papas, zanahoria, apio y aderezos.',
+            items: [
               { id: 'alitas-250', name: 'Alitas 250 g', price: 135, image: 'alitas.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' },
               { id: 'alitas-500', name: 'Alitas 500 g', price: 170, image: 'alitas.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' },
               { id: 'alitas-1000', name: 'Alitas 1 kg', price: 260, image: 'alitas.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' }
             ]
           },
           {
-            section: 'HAMBURGUESAS & HOT DOGS',
+            section: 'HOT DOGS',
+            short: 'Hot dogs',
+            emoji: '🌭',
+            blurb: 'Jumbo, con papas a la francesa incluidas.',
             items: [
-              { id: 'hotdog-jumbo-1', name: 'Hot Dog Jumbo (1 pza)', price: 70, image: 'hotdog1.jpg', desc: 'Incluye papas a la francesa.' },
-              { id: 'hotdog-jumbo-2', name: 'Hot Dog Jumbo (2 pzas)', price: 120, image: 'hotdog.jpg', desc: 'Incluye papas a la francesa.' },
-              { id: 'hamburguesa-res', name: 'Hamburguesa de Res', price: 60, image: 'hamburguesa_res_tocino.jpg', desc: 'Res, jamón, quesos, tomate, cebolla, aguacate, lechuga.', options: { friesDelta: 25 } },
-              { id: 'hamburguesa-res-doble', name: 'Hamburguesa Doble de Res', price: 90, image: 'res_doble.jpg', desc: 'Doble carne, doble jamón, doble queso.', options: { friesDelta: 25 } },
-              { id: 'hamburguesa-res-tocino', name: 'Hamburguesa de Res con Tocino', price: 80, image: 'hamburguesa_res_tocino.jpg', desc: 'Res con tocino, jamón, quesos, verduras.', options: { friesDelta: 25 } },
-              { id: 'hamburguesa-pollo', name: 'Hamburguesa de Pollo', price: 90, image: 'hamburguesa_pollo.jpg', desc: 'Pechuga empanizada, queso, verduras, ranch.', options: { friesDelta: 25, customSauce: true } },
-              { id: 'hamburguesa-pollo-tocino', name: 'Hamburguesa de Pollo con Tocino', price: 110, image: 'hambrguesa_pollo_tocino.jpg', desc: 'Pechuga empanizada, tocino, queso, ranch.', options: { friesDelta: 25, customSauce: true } }
+              { id: 'hotdog-jumbo-1', name: 'Hot Dog Jumbo (1 pza)', price: 80, image: 'hotdog1.jpg', desc: 'Incluye papas a la francesa.' },
+              { id: 'hotdog-jumbo-2', name: 'Hot Dog Jumbo (2 pzas)', price: 130, image: 'hotdog.jpg', desc: 'Incluye papas a la francesa.' }
+            ]
+          },
+          {
+            section: 'HAMBURGUESAS',
+            short: 'Hamburguesas',
+            emoji: '🍔',
+            blurb: 'El precio de la tarjeta es sin papas. Puedes agregarlas al pedir.',
+            items: [
+              { id: 'hamburguesa-res', name: 'Hamburguesa de Res', price: 70, image: 'hamburguesa_res_tocino.jpg', desc: 'Res, jamón, quesos, tomate, cebolla, aguacate y lechuga.', options: { friesDelta: 25 } },
+              { id: 'hamburguesa-res-doble', name: 'Hamburguesa Doble de Res', price: 95, image: 'res_doble.jpg', desc: 'Doble carne, doble jamón y doble queso.', options: { friesDelta: 30 } },
+              { id: 'hamburguesa-res-tocino', name: 'Hamburguesa de Res con Tocino', price: 95, image: 'hamburguesa_res_tocino.jpg', desc: 'Res con tocino, jamón, quesos y verduras.', options: { friesDelta: 30 } },
+              { id: 'hamburguesa-pollo', name: 'Hamburguesa de Pollo', price: 105, image: 'hamburguesa_pollo.jpg', desc: 'Pechuga empanizada, queso, verduras y ranch.', options: { friesDelta: 25, customSauce: true } },
+              { id: 'hamburguesa-pollo-tocino', name: 'Hamburguesa de Pollo con Tocino', price: 115, image: 'hambrguesa_pollo_tocino.jpg', desc: 'Pechuga empanizada, tocino, queso y ranch.', options: { friesDelta: 30, customSauce: true } }
             ]
           },
           {
             section: 'SUSHI',
+            short: 'Sushi',
+            emoji: '🍣',
+            blurb: 'Arma tus rollos. En los combos 1 y 2, papas y arroz frito son opcionales.',
             items: [
-              { id: 'sushi-individual', name: 'Sushi Individual', price: 95, image: 'sushi_individual.jpg', desc: '1 rollo a elegir (fresco o frito).', options: { sushi: 'individual' } },
-              { id: 'sushi-combo-1', name: 'Sushi Combo 1', price: 200, image: 'sushi_combo1.jpg', desc: '1 rollo frito y 2 frescos, arroz frito, papas.', options: { sushi: 'combo1' } },
-              { id: 'sushi-combo-2', name: 'Sushi Combo 2', price: 180, image: 'sushi_combo2.jpg', desc: '2 rollos a elegir (frescos o fritos), arroz, papas.', options: { sushi: 'combo2' } },
-              { id: 'sushi-combo-3', name: 'Sushi Combo 3', price: 125, image: 'sushi_combo3.jpg', desc: '1 rollo a elegir, arroz, papas.', options: { sushi: 'combo3' } }
+              { id: 'sushi-individual', name: 'Sushi Individual', price: 110, image: 'sushi_individual.jpg', desc: '1 rollo a elegir, fresco o frito.', options: { sushi: 'individual' } },
+              { id: 'sushi-combo-1', name: 'Sushi Combo 1', price: 200, image: 'sushi_combo1.jpg', desc: '1 rollo frito y 2 frescos.', options: { sushi: 'combo1', sidesDelta: 30 } },
+              { id: 'sushi-combo-2', name: 'Sushi Combo 2', price: 180, image: 'sushi_combo2.jpg', desc: '2 rollos a elegir, frescos o fritos.', options: { sushi: 'combo2', sidesDelta: 20 } },
+              { id: 'sushi-combo-3', name: 'Sushi Combo 3', price: 130, image: 'sushi_combo3.jpg', desc: '1 rollo a elegir. Incluye arroz y papas.', options: { sushi: 'combo3' } }
             ]
           },
           {
             section: 'POLLO FRITO',
+            short: 'Pollo',
+            emoji: '🍗',
+            blurb: 'En los paquetes eliges puré de papa o papas fritas.',
             items: [
-              { id: 'pollo-pieza', name: 'Pieza individual', price: 18, image: 'pollo_frito.jpg' },
-              { id: 'pollo-paquete-1', name: 'Paquete 1 (2 pzas)', price: 45, image: 'pollo_frito.jpg', desc: 'Incluye porción de spaghetti o puré.', options: { side: true } },
-              { id: 'pollo-paquete-2', name: 'Paquete 2 (3 pzas)', price: 65, image: 'pollo_frito.jpg', desc: 'Incluye porción de spaghetti o puré.', options: { side: true } },
-              { id: 'pollo-paquete-3', name: 'Paquete 3 (6 pzas)', price: 130, image: 'pollo_frito.jpg', desc: 'Incluye 1/2 de spaghetti o puré.', options: { side: true } },
-              { id: 'pollo-paquete-4', name: 'Paquete 4 (8 pzas)', price: 170, image: 'pollo_frito.jpg', desc: 'Incluye 1/2 de spaghetti o puré.', options: { side: true } },
-              { id: 'pollo-paquete-5', name: 'Paquete 5 (10 pzas)', price: 200, image: 'pollo_frito.jpg', desc: 'Incluye 1/2 de spaghetti o puré.', options: { side: true } },
-              { id: 'pollo-paquete-6', name: 'Paquete 6 (12 pzas)', price: 230, image: 'pollo_frito.jpg', desc: 'Incluye 1/2 de spaghetti o puré.', options: { side: true } }
-            ]
-          },
-          {
-            section: 'BEBIDAS',
-            items: [
-                { id: 'bebida-coca-600', name: 'Coca cola 600 ml', price: 25,image:'coca600.jpg'},
-                { id: 'bebida-fuze-negro-600', name: 'Fuze tea Negro 600 ml', price: 25, image:'fuzelimon.jpg' },
-                { id: 'bebida-coca-2-5l', name: 'Coca cola 2.5 lt', price: 60,image:'coca2medio.jpg' },
-                { id: 'bebida-agua-ciel-1l', name: 'Agua Ciel 1 litro', price: 20, image:'agua1lt.jpg' },
-                { id: 'bebida-joyas', name: 'Joyas (Sabores)', price: 25,image:'joyadurazno.png', options: { flavors: ['Manzana', 'Durazno', 'Ponche'] } }
+              { id: 'pollo-pieza', group: 'Por pieza', name: 'Pieza individual', price: 18, image: 'pollo_frito.jpg', desc: 'Una pieza de pollo frito.' },
+              { id: 'pollo-paquete-1', group: 'Paquetes', name: 'Paquete 1 (2 pzas)', price: 45, image: 'pollo_frito.jpg', desc: 'Incluye puré o papas fritas.', options: { side: true } },
+              { id: 'pollo-paquete-2', group: 'Paquetes', name: 'Paquete 2 (3 pzas)', price: 65, image: 'pollo_frito.jpg', desc: 'Incluye puré o papas fritas.', options: { side: true } },
+              { id: 'pollo-paquete-3', group: 'Paquetes', name: 'Paquete 3 (6 pzas)', price: 130, image: 'pollo_frito.jpg', desc: 'Incluye puré o papas fritas.', options: { side: true } },
+              { id: 'pollo-paquete-4', group: 'Paquetes', name: 'Paquete 4 (8 pzas)', price: 170, image: 'pollo_frito.jpg', desc: 'Incluye puré o papas fritas.', options: { side: true } },
+              { id: 'pollo-paquete-5', group: 'Paquetes', name: 'Paquete 5 (10 pzas)', price: 200, image: 'pollo_frito.jpg', desc: 'Incluye puré o papas fritas.', options: { side: true } },
+              { id: 'pollo-paquete-6', group: 'Paquetes', name: 'Paquete 6 (12 pzas)', price: 230, image: 'pollo_frito.jpg', desc: 'Incluye puré o papas fritas.', options: { side: true } }
             ]
           },
           {
             section: 'EXTRAS',
+            short: 'Extras',
+            emoji: '➕',
+            blurb: 'Agrégalos a tu pedido con un toque.',
             items: [
-                { id: 'extra-arroz', name: '1/2 arroz blanco', price: 45,image:'arroz_extra.jpg' },
-                { id: 'extra-spaghetti', name: '1/2 spaghetti', price: 45,image:'extra_spaguetti.jpg' },
-                { id: 'extra-pure', name: '1/2 puré de papa', price: 45,image:'extra_pure.jpg' },
-                { id: 'extra-papas', name: 'Orden papas francesa', price: 45,image:'extra_papas.jpg' }
+                { id: 'extra-papas', name: 'Orden de papas', price: 45, image: 'extra_papas.jpg', desc: 'Papas a la francesa.' },
+                { id: 'extra-soya', name: 'Soya extra', price: 15, emoji: '🍶', desc: 'Porción adicional de soya.' },
+                { id: 'extra-aderezo', name: 'Aderezo extra', price: 15, emoji: '🥣', desc: 'Porción adicional de aderezo.' },
+                { id: 'extra-salsa', name: 'Salsa extra', price: 15, emoji: '🌶️', desc: 'Porción adicional de salsa.' }
             ]
           }
         ];
@@ -342,69 +603,155 @@
         let cart = [];
         let currentItem = null;
 
-        // Inicializar
+        let activeSection = 0;
+
         document.addEventListener('DOMContentLoaded', () => {
+            renderCategories();
             renderMenu();
+            const acceptBtn = document.querySelector('.notice-accept');
+            if (acceptBtn) acceptBtn.focus();
         });
 
-        // Renderizar Menú con Mejor Diseño
-        function renderMenu() {
-            const container = document.getElementById('menu-container');
-            container.innerHTML = '';
+        function acceptNotice() {
+            const notice = document.getElementById('price-notice');
+            if (!notice) return;
+            notice.classList.add('is-leaving');
+            document.body.classList.remove('notice-open');
+            setTimeout(() => notice.remove(), 260);
+        }
 
-            CATALOG.forEach((cat, index) => {
-                const sectionDiv = document.createElement('div');
-                sectionDiv.className = 'mb-12 fade-in-up';
-                sectionDiv.style.animationDelay = `${index * 0.1}s`; // Efecto cascada
-                
-                let itemsHtml = '';
-                cat.items.forEach(item => {
-                    // Imagen placeholder si no hay url real (Fallback robusto)
-                    const imgUrl = item.image && item.image.length > 0 ? item.image : `https://placehold.co/600x400/1a1a1a/ff6b35?text=${encodeURIComponent(item.name)}`;
-                    
-                    // Fallback para error de carga de imagen local
-                    const errorAttr = `onerror="this.src='https://placehold.co/600x400/1a1a1a/ff6b35?text=Sin+Imagen'"`;
+        function esc(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (c) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
 
-                    itemsHtml += `
-                        <div class="product-card bg-[#1a1a1a] rounded-xl shadow-lg border border-gray-800 overflow-hidden flex flex-col h-full group">
-                            <div class="img-container h-64 w-full relative">
-                                <img src="${imgUrl}" alt="${item.name}" ${errorAttr} loading="lazy">
-                                <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black to-transparent">
-                                    <span class="bg-brand text-white text-xs font-bold px-2 py-1 rounded shadow-md">$${item.price}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="p-5 flex flex-col flex-grow relative">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h3 class="font-bold text-lg text-white leading-tight group-hover:text-brand transition-colors">${item.name}</h3>
-                                </div>
-                                <p class="text-gray-400 text-sm mb-6 line-clamp-2 flex-grow">${item.desc || 'Delicioso platillo preparado al momento.'}</p>
-                                
-                                <button onclick='initAddToCart(${JSON.stringify(item)})' class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-brand hover:text-white transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg flex items-center justify-center gap-2">
-                                    <i class="fas fa-plus"></i> Agregar
-                                </button>
-                            </div>
+        function findItem(id) {
+            for (const cat of CATALOG) {
+                const item = cat.items.find((entry) => entry.id === id);
+                if (item) return item;
+            }
+            return null;
+        }
+
+        function needsOptions(item) {
+            const options = item.options;
+            if (!options) return false;
+            return !!(options.sauce || options.customSauce || options.friesDelta || options.side || options.flavors || options.sushi || options.sidesDelta);
+        }
+
+        function renderCategories() {
+            const nav = document.getElementById('category-nav');
+            nav.innerHTML = CATALOG.map((cat, index) => `
+                <button type="button" class="cat-btn ${index === activeSection ? 'active' : ''}" onclick="selectCategory(${index})" aria-pressed="${index === activeSection}">
+                    <span aria-hidden="true">${cat.emoji}</span> ${esc(cat.short)}
+                </button>
+            `).join('');
+            const active = nav.querySelector('.cat-btn.active');
+            if (active) {
+                const left = active.offsetLeft - (nav.clientWidth - active.offsetWidth) / 2;
+                nav.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+            }
+        }
+
+        function selectCategory(index) {
+            activeSection = index;
+            renderCategories();
+            renderMenu();
+            const menu = document.getElementById('menu-container');
+            if (menu.getBoundingClientRect().top < 120) {
+                menu.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function priceBits(item) {
+            if (item.options && item.options.friesDelta) {
+                return `<strong>$${item.price}</strong><span class="price-alt">con papas $${item.price + item.options.friesDelta}</span>`;
+            }
+            if (item.options && item.options.sidesDelta) {
+                return `<strong>$${item.price}</strong><span class="price-alt">con papas y arroz $${item.price + item.options.sidesDelta}</span>`;
+            }
+            return `<strong>$${item.price}</strong>`;
+        }
+
+        function dishPhoto(item) {
+            const fallback = item.emoji || '🍽️';
+            if (!item.image) return `<div class="dish-photo"><div class="dish-fallback" aria-hidden="true">${fallback}</div></div>`;
+            return `
+                <button type="button" class="dish-photo" onclick="openPhoto('${item.id}')" aria-label="Ver ${esc(item.name)} en grande">
+                    <img src="${esc(item.image)}" alt="" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.hidden=false; this.parentElement.disabled=true; this.parentElement.querySelector('.zoom-hint').hidden=true;">
+                    <div class="dish-fallback" hidden aria-hidden="true">${fallback}</div>
+                    <span class="zoom-hint" aria-hidden="true"><i class="fas fa-expand"></i></span>
+                </button>
+            `;
+        }
+
+        function renderDish(item) {
+            const action = needsOptions(item)
+                ? `<button type="button" class="dish-btn" onclick="initAddToCart('${item.id}')">Elegir</button>`
+                : `<button type="button" class="dish-btn dish-btn-icon" onclick="quickAdd('${item.id}')" aria-label="Agregar ${esc(item.name)}"><i class="fas fa-plus"></i></button>`;
+            return `
+                <article class="dish">
+                    ${dishPhoto(item)}
+                    <div class="dish-body">
+                        <h4>${esc(item.name)}</h4>
+                        <p>${esc(item.desc || 'Listo para agregar a tu pedido.')}</p>
+                        <div class="dish-foot">
+                            <div class="dish-price">${priceBits(item)}</div>
+                            ${action}
                         </div>
-                    `;
-                });
-
-                sectionDiv.innerHTML = `
-                    <h3 class="text-3xl font-extrabold mb-6 text-white border-l-4 border-brand pl-4 flex items-center gap-3">
-                        ${cat.section} 
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        ${itemsHtml}
                     </div>
-                `;
-                container.appendChild(sectionDiv);
+                </article>
+            `;
+        }
+
+        function renderMenu() {
+            const cat = CATALOG[activeSection];
+            const groups = [];
+            cat.items.forEach((item) => {
+                const name = item.group || '';
+                let bucket = groups.find((group) => group.name === name);
+                if (!bucket) {
+                    bucket = { name, items: [] };
+                    groups.push(bucket);
+                }
+                bucket.items.push(item);
             });
+
+            const groupsHtml = groups.map((group) => `
+                <div class="dish-group">
+                    ${group.name ? `<h4 class="group-title">${esc(group.name)}</h4>` : ''}
+                    <div class="dish-list">${group.items.map(renderDish).join('')}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('menu-container').innerHTML = `
+                <div class="section-head fade-in-up">
+                    <h3>${cat.emoji} ${esc(cat.short)}</h3>
+                    <p>${esc(cat.blurb || '')}</p>
+                </div>
+                ${groupsHtml}
+            `;
+        }
+
+        function quickAdd(id) {
+            const item = findItem(id);
+            if (!item || needsOptions(item)) return;
+            const existing = cart.find((entry) => entry.id === id && entry.finalPrice === item.price && entry.selectedOptions.length === 0);
+            if (existing) existing.qty += 1;
+            else cart.push({ ...item, qty: 1, finalPrice: item.price, selectedOptions: [] });
+            updateCartUI();
+            showToast(item.name);
         }
 
         // ==============================
         // MODAL DE PERSONALIZACIÓN
         // ==============================
-        function initAddToCart(item) {
+        function initAddToCart(id) {
+            const item = typeof id === 'string' ? findItem(id) : id;
+            if (!item) return;
             currentItem = item;
+            modalQty = 1;
             const modalBody = document.getElementById('modal-body');
             let optionsHtml = '';
 
@@ -416,22 +763,29 @@
                 optionsHtml += createSelect('Salsa para la hamburguesa:', 'selected_sauce', ['BBQ', 'Mango Habanero', 'Salsa Picante', 'Sin Salsa']);
             }
 
-            // Lógica Papas
             if (item.options && item.options.friesDelta) {
                 optionsHtml += `
-                    <div class="mb-5 bg-gray-800 p-4 rounded-lg border border-gray-700">
-                        <label class="flex items-center space-x-3 cursor-pointer w-full">
-                            <input type="checkbox" id="extra_fries" class="form-checkbox h-6 w-6 text-orange-600 rounded bg-gray-700 border-gray-600 focus:ring-orange-500">
-                            <span class="text-white font-medium flex-1">Agregar papas</span>
-                            <span class="text-brand font-bold text-sm">+$${item.options.friesDelta}</span>
-                        </label>
-                    </div>
+                    <label class="option-card">
+                        <input type="checkbox" id="extra_fries" onchange="refreshModalPrice()">
+                        <span class="text-white font-medium flex-1">Agregar papas</span>
+                        <span class="text-brand font-bold text-sm">+$${item.options.friesDelta}</span>
+                    </label>
+                `;
+            }
+
+            if (item.options && item.options.sidesDelta) {
+                optionsHtml += `
+                    <label class="option-card">
+                        <input type="checkbox" id="extra_sides" onchange="refreshModalPrice()">
+                        <span class="text-white font-medium flex-1">Agregar papas y arroz frito</span>
+                        <span class="text-brand font-bold text-sm">+$${item.options.sidesDelta}</span>
+                    </label>
                 `;
             }
 
             // Lógica Guarnición
             if (item.options && item.options.side) {
-                optionsHtml += createSelect('Elige tu complemento:', 'selected_side', ['Spaghetti', 'Puré de Papa']);
+                optionsHtml += createSelect('Elige tu complemento:', 'selected_side', ['Puré de Papa', 'Papas Fritas']);
             }
             
             // Lógica Sabores
@@ -462,42 +816,51 @@
                 }
             }
 
-            // Fallback para imagen en modal
-            const imgUrl = item.image && item.image.length > 0 ? item.image : `https://placehold.co/150x150/333/fff?text=IMG`;
+            const imgUrl = item.image && item.image.length > 0 ? item.image : '';
+            const photo = imgUrl
+                ? `<button type="button" class="modal-photo" onclick="openPhoto('${item.id}')" aria-label="Ver foto en grande">
+                        <img src="${esc(imgUrl)}" alt="" onerror="this.style.display='none'">
+                        <span class="zoom-hint" aria-hidden="true"><i class="fas fa-expand"></i></span>
+                   </button>`
+                : `<div class="w-20 h-20 rounded-2xl bg-[#242424] grid place-items-center text-3xl">${item.emoji || '🍽️'}</div>`;
+            let priceHint = `$${item.price}`;
+            if (item.options && item.options.friesDelta) priceHint = `Sin papas $${item.price}`;
+            if (item.options && item.options.sidesDelta) priceHint = `Sin papas ni arroz $${item.price}`;
 
             modalBody.innerHTML = `
-                <div class="flex items-center gap-5 mb-6 pb-6 border-b border-gray-800">
-                     <img src="${imgUrl}" class="w-24 h-24 rounded-lg object-cover shadow-lg border border-gray-700" onerror="this.src='https://placehold.co/150x150/333/fff?text=IMG'">
+                <div class="flex items-center gap-4 mb-5">
+                     ${photo}
                      <div>
-                        <h3 class="text-2xl font-bold text-white leading-tight">${item.name}</h3>
-                        <p class="text-brand text-xl font-bold mt-1">$${item.price}</p>
+                        <h3 class="text-xl font-bold text-white leading-tight">${esc(item.name)}</h3>
+                        <p class="text-brand text-lg font-bold mt-1">${priceHint}</p>
                      </div>
                 </div>
-                <div class="mb-6 text-gray-400 text-sm bg-gray-900/50 p-3 rounded border-l-2 border-gray-700 italic">${item.desc || 'Personaliza tu pedido a continuación.'}</div>
+                <p class="mb-5 text-gray-400 text-sm">${esc(item.desc || 'Personaliza tu pedido.')}</p>
                 
                 <form id="add-form" onsubmit="confirmAddToCart(event)">
                     ${optionsHtml}
                     
-                    <div class="mt-6 mb-4">
-                        <label class="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-wide">Nota especial (Opcional)</label>
-                        <input type="text" id="item_note" placeholder="Ej: Sin cebolla, aderezo aparte..." class="w-full bg-[#121212] border border-gray-700 rounded-lg p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand transition">
+                    <div class="mt-2 mb-4">
+                        <label class="block text-sm font-bold text-gray-400 mb-2" for="item_note">Nota para cocina (opcional)</label>
+                        <input type="text" id="item_note" placeholder="Ej. sin cebolla" class="w-full bg-[#121212] border border-gray-700 rounded-lg p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand transition">
                     </div>
 
-                    <div class="flex items-center justify-between mt-8 bg-gray-800 p-3 rounded-lg border border-gray-700">
-                        <span class="text-white font-bold ml-2">Cantidad:</span>
-                        <div class="flex items-center bg-[#121212] rounded-lg p-1">
-                            <button type="button" onclick="adjustQty(-1)" class="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded text-white font-bold transition">-</button>
-                            <span id="modal-qty" class="font-bold text-xl w-10 text-center">1</span>
-                            <button type="button" onclick="adjustQty(1)" class="w-10 h-10 bg-brand hover:bg-orange-600 rounded text-white font-bold transition">+</button>
+                    <div class="flex items-center justify-between mt-4 bg-[#121212] p-3 rounded-2xl">
+                        <span class="text-white font-bold ml-1">Cantidad</span>
+                        <div class="qty-mini">
+                            <button type="button" onclick="adjustQty(-1)" aria-label="Menos">−</button>
+                            <span id="modal-qty">1</span>
+                            <button type="button" onclick="adjustQty(1)" aria-label="Más">+</button>
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-brand-gradient text-white font-bold py-4 mt-6 rounded-xl hover:shadow-lg hover:shadow-orange-500/20 transition transform hover:-translate-y-1">
-                        Confirmar y Agregar
+                    <button type="submit" class="submit-add">
+                        Agregar · <span id="modal-total">$${item.price}</span>
                     </button>
                 </form>
             `;
 
+            refreshModalPrice();
             openModal('product-modal');
         }
 
@@ -528,6 +891,23 @@
             modalQty += delta;
             if (modalQty < 1) modalQty = 1;
             document.getElementById('modal-qty').innerText = modalQty;
+            refreshModalPrice();
+        }
+
+        function optionExtra() {
+            if (!currentItem || !currentItem.options) return 0;
+            let extra = 0;
+            const fries = document.getElementById('extra_fries');
+            if (fries && fries.checked) extra += currentItem.options.friesDelta || 0;
+            const sides = document.getElementById('extra_sides');
+            if (sides && sides.checked) extra += currentItem.options.sidesDelta || 0;
+            return extra;
+        }
+
+        function refreshModalPrice() {
+            const totalEl = document.getElementById('modal-total');
+            if (!totalEl || !currentItem) return;
+            totalEl.textContent = '$' + ((currentItem.price + optionExtra()) * modalQty);
         }
 
         function confirmAddToCart(e) {
@@ -554,7 +934,13 @@
             const friesCheck = document.getElementById('extra_fries');
             if (friesCheck && friesCheck.checked) {
                 extraPrice += currentItem.options.friesDelta;
-                finalOptions.push('Papas Agrandadas');
+                finalOptions.push('Con papas');
+            }
+
+            const sidesCheck = document.getElementById('extra_sides');
+            if (sidesCheck && sidesCheck.checked) {
+                extraPrice += currentItem.options.sidesDelta;
+                finalOptions.push('Con papas y arroz frito');
             }
 
             const note = document.getElementById('item_note').value;
@@ -570,7 +956,7 @@
             cart.push(cartItem);
             updateCartUI();
             closeModal('product-modal');
-            showToast(); // Mostrar confirmación visual
+            showToast(currentItem.name);
             modalQty = 1;
         }
 
@@ -582,62 +968,66 @@
             const floatTotal = document.getElementById('float-total');
             const cartItemsContainer = document.getElementById('cart-items');
             const cartTotalEl = document.getElementById('cart-total');
+            const cartBar = document.getElementById('cart-bar');
+            const cartLabel = document.getElementById('cart-bar-label');
 
             const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
-            
-            // Animación del badge
+            const total = cart.reduce((acc, item) => acc + (item.finalPrice * item.qty), 0);
+
             if (totalItems > 0) {
                 countEl.innerText = totalItems;
                 countEl.classList.remove('scale-0');
                 countEl.classList.add('scale-100');
+                cartBar.classList.add('is-visible');
+                cartLabel.textContent = totalItems === 1 ? '1 producto' : `${totalItems} productos`;
             } else {
                 countEl.classList.add('scale-0');
                 countEl.classList.remove('scale-100');
+                cartBar.classList.remove('is-visible');
+                cartLabel.textContent = 'Ver pedido';
             }
+
+            floatTotal.innerText = `$${total}`;
+            cartTotalEl.innerText = `$${total}`;
 
             if (cart.length === 0) {
                 cartItemsContainer.innerHTML = `
                     <div class="flex flex-col items-center justify-center py-10 text-gray-500">
                         <i class="fas fa-utensils text-4xl mb-3 opacity-30"></i>
-                        <p>Tu carrito está vacío</p>
+                        <p>Tu pedido está vacío</p>
                     </div>`;
-                floatTotal.innerText = '$0';
-                cartTotalEl.innerText = '$0.00';
                 return;
             }
 
-            let html = '';
-            let total = 0;
-
-            cart.forEach((item, index) => {
+            cartItemsContainer.innerHTML = cart.map((item, index) => {
                 const subtotal = item.finalPrice * item.qty;
-                total += subtotal;
-                
-                html += `
-                    <div class="flex justify-between items-start bg-[#121212] p-4 rounded-lg border border-gray-800 relative group transition hover:border-gray-600">
-                        <div class="pr-6">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="bg-brand text-white text-xs font-bold px-1.5 py-0.5 rounded">${item.qty}x</span>
-                                <p class="font-bold text-white text-lg">${item.name}</p>
-                            </div>
-                            <p class="text-xs text-gray-400 leading-relaxed mb-2 pl-7">${item.selectedOptions.join(', ')}</p>
-                            <div class="text-xs text-brand font-bold pl-7">$${item.finalPrice} c/u</div>
+                const opts = item.selectedOptions.length
+                    ? `<p class="cart-opts">${esc(item.selectedOptions.join(' · '))}</p>`
+                    : '';
+                return `
+                    <div class="cart-row">
+                        <div>
+                            <p class="cart-name">${esc(item.name)}</p>
+                            ${opts}
+                            <p class="cart-unit">$${item.finalPrice} c/u</p>
                         </div>
-                        <div class="flex flex-col items-end justify-between h-full">
-                            <p class="font-bold text-white text-lg">$${subtotal}</p>
-                            <button onclick="removeFromCart(${index})" class="text-red-500 text-sm hover:text-red-400 mt-2 bg-red-500/10 p-2 rounded-full w-8 h-8 flex items-center justify-center transition hover:bg-red-500/20"><i class="fas fa-trash-alt"></i></button>
+                        <div class="cart-side">
+                            <p class="font-bold text-white">$${subtotal}</p>
+                            <div class="qty-mini">
+                                <button type="button" onclick="changeQty(${index}, -1)" aria-label="Quitar uno">−</button>
+                                <span>${item.qty}</span>
+                                <button type="button" onclick="changeQty(${index}, 1)" aria-label="Agregar uno">+</button>
+                            </div>
                         </div>
                     </div>
                 `;
-            });
-
-            cartItemsContainer.innerHTML = html;
-            floatTotal.innerText = `$${total}`;
-            cartTotalEl.innerText = `$${total}`;
+            }).join('');
         }
 
-        function removeFromCart(index) {
-            cart.splice(index, 1);
+        function changeQty(index, delta) {
+            if (!cart[index]) return;
+            cart[index].qty += delta;
+            if (cart[index].qty < 1) cart.splice(index, 1);
             updateCartUI();
         }
 
@@ -704,20 +1094,61 @@
         // ==============================
         function openModal(id) {
             document.getElementById(id).classList.add('active');
-            document.body.style.overflow = 'hidden'; // Evitar scroll del body
+            document.body.style.overflow = 'hidden';
+            document.getElementById('cart-bar').classList.add('is-hidden');
         }
         function closeModal(id) {
             document.getElementById(id).classList.remove('active');
             document.body.style.overflow = '';
+            if (!document.querySelector('.modal-overlay.active')) {
+                document.getElementById('cart-bar').classList.remove('is-hidden');
+            }
         }
         function openCart() {
             openModal('cart-modal');
         }
+
+        function openPhoto(id) {
+            const item = findItem(id);
+            if (!item || !item.image) return;
+            const viewer = document.getElementById('photo-viewer');
+            const img = document.getElementById('photo-viewer-img');
+            img.src = item.image;
+            img.alt = item.name;
+            document.getElementById('photo-viewer-name').textContent = item.name;
+            let meta = item.desc || '';
+            if (item.options && item.options.friesDelta) meta = `Sin papas $${item.price} · con papas $${item.price + item.options.friesDelta}`;
+            else if (item.options && item.options.sidesDelta) meta = `$${item.price} · con papas y arroz $${item.price + item.options.sidesDelta}`;
+            else meta = meta ? `$${item.price} · ${meta}` : `$${item.price}`;
+            document.getElementById('photo-viewer-meta').textContent = meta;
+            viewer.hidden = false;
+            viewer.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            document.getElementById('cart-bar').classList.add('is-hidden');
+        }
+
+        function closePhoto() {
+            const viewer = document.getElementById('photo-viewer');
+            viewer.classList.remove('active');
+            viewer.hidden = true;
+            document.getElementById('photo-viewer-img').removeAttribute('src');
+            if (!document.querySelector('.modal-overlay.active')) {
+                document.body.style.overflow = '';
+                document.getElementById('cart-bar').classList.remove('is-hidden');
+            }
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && document.getElementById('photo-viewer').classList.contains('active')) {
+                closePhoto();
+            }
+        });
         
-        function showToast() {
+        function showToast(name) {
             const toast = document.getElementById("toast");
+            toast.innerHTML = `<i class="fas fa-check-circle text-brand mr-2"></i> ${esc(name || 'Platillo')} agregado`;
             toast.className = "show";
-            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 2200);
         }
 
         document.querySelectorAll('.modal-overlay').forEach(overlay => {
