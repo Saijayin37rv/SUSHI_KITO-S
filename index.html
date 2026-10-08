@@ -529,8 +529,8 @@
             blurb: 'Elige el tamaño y la salsa. Incluye papas, zanahoria, apio y aderezos.',
             items: [
               { id: 'alitas-250', name: 'Alitas 250 g', price: 135, image: 'alitas.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' },
-              { id: 'alitas-500', name: 'Alitas 500 g', price: 170, image: 'alitas.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' },
-              { id: 'alitas-1000', name: 'Alitas 1 kg', price: 260, image: 'alitas.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' }
+              { id: 'alitas-500', name: 'Alitas 500 g', price: 180, image: 'alitas.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' },
+              { id: 'alitas-1000', name: 'Alitas 1 kg', price: 290, image: 'alitas.jpg', options: { sauce: true }, desc: 'Incluye papas, zanahoria, apio y aderezos.' }
             ]
           },
           {
@@ -563,7 +563,7 @@
             blurb: 'Arma tus rollos. En los combos 1 y 2, papas y arroz frito son opcionales.',
             items: [
               { id: 'sushi-individual', name: 'Sushi Individual', price: 110, image: 'sushi_individual.jpg', desc: '1 rollo a elegir, fresco o frito.', options: { sushi: 'individual' } },
-              { id: 'sushi-combo-1', name: 'Sushi Combo 1', price: 200, image: 'sushi_combo1.jpg', desc: '1 rollo frito y 2 frescos.', options: { sushi: 'combo1', sidesDelta: 30 } },
+              { id: 'sushi-combo-1', name: 'Sushi Combo 1', price: 200, image: 'sushi_combo1.jpg', desc: '1 rollo frito y 2 frescos. Cambiar a 2 fritos y 1 fresco suma $15.', options: { sushi: 'combo1', sidesDelta: 30, frySwapDelta: 15 } },
               { id: 'sushi-combo-2', name: 'Sushi Combo 2', price: 180, image: 'sushi_combo2.jpg', desc: '2 rollos a elegir, frescos o fritos.', options: { sushi: 'combo2', sidesDelta: 20 } },
               { id: 'sushi-combo-3', name: 'Sushi Combo 3', price: 130, image: 'sushi_combo3.jpg', desc: '1 rollo a elegir. Incluye arroz y papas.', options: { sushi: 'combo3' } }
             ]
@@ -669,7 +669,10 @@
                 return `<strong>$${item.price}</strong><span class="price-alt">con papas $${item.price + item.options.friesDelta}</span>`;
             }
             if (item.options && item.options.sidesDelta) {
-                return `<strong>$${item.price}</strong><span class="price-alt">con papas y arroz $${item.price + item.options.sidesDelta}</span>`;
+                const swap = item.options.frySwapDelta
+                    ? `<span class="price-alt">2 fritos y 1 fresco +$${item.options.frySwapDelta}</span>`
+                    : '';
+                return `<strong>$${item.price}</strong><span class="price-alt">con papas y arroz $${item.price + item.options.sidesDelta}</span>${swap}`;
             }
             return `<strong>$${item.price}</strong>`;
         }
@@ -801,12 +804,14 @@
                     optionsHtml += createSelect(null, 'sushi_roll_1', [...SUSHI_FRESH.map(s=>s.name + ' (Fresco)'), ...SUSHI_FRIED.map(s=>s.name + ' (Frito)')]);
                 }
                 else if (type === 'combo1') {
-                    optionsHtml += createLabel('Arma tu combo (1 Frito, 2 Frescos):');
-                    // *** CORRECCIÓN APLICADA AQUÍ ***
-                    optionsHtml += createSelect('Rollo 1 (Frito):', 'sushi_roll_1', SUSHI_FRIED.map(s=>s.name + ' (Frito)'));
-                    optionsHtml += createSelect('Rollo 2 (Fresco):', 'sushi_roll_2', SUSHI_FRESH.map(s=>s.name + ' (Fresco)'));
-                    optionsHtml += createSelect('Rollo 3 (Fresco):', 'sushi_roll_3', SUSHI_FRESH.map(s=>s.name + ' (Fresco)'));
-                    // ********************************
+                    optionsHtml += `
+                        <label class="option-card">
+                            <input type="checkbox" id="combo1_swap" onchange="toggleCombo1Mix()">
+                            <span class="text-white font-medium flex-1">Cambiar a 2 fritos y 1 fresco</span>
+                            <span class="text-brand font-bold text-sm">+$${item.options.frySwapDelta}</span>
+                        </label>
+                        <div id="combo1-rolls">${combo1RollsHtml(false)}</div>
+                    `;
                 }
                 else if (type === 'combo2') {
                     const allRolls = [...SUSHI_FRESH.map(s=>s.name + ' (Fresco)'), ...SUSHI_FRIED.map(s=>s.name + ' (Frito)')];
@@ -864,6 +869,29 @@
             openModal('product-modal');
         }
 
+        function combo1RollsHtml(twoFried) {
+            const fried = SUSHI_FRIED.map((roll) => roll.name + ' (Frito)');
+            const fresh = SUSHI_FRESH.map((roll) => roll.name + ' (Fresco)');
+            if (twoFried) {
+                return createLabel('Arma tu combo (2 fritos, 1 fresco):')
+                    + createSelect('Rollo 1 (Frito):', 'sushi_roll_1', fried)
+                    + createSelect('Rollo 2 (Frito):', 'sushi_roll_2', fried)
+                    + createSelect('Rollo 3 (Fresco):', 'sushi_roll_3', fresh);
+            }
+            return createLabel('Arma tu combo (1 frito, 2 frescos):')
+                + createSelect('Rollo 1 (Frito):', 'sushi_roll_1', fried)
+                + createSelect('Rollo 2 (Fresco):', 'sushi_roll_2', fresh)
+                + createSelect('Rollo 3 (Fresco):', 'sushi_roll_3', fresh);
+        }
+
+        function toggleCombo1Mix() {
+            const box = document.getElementById('combo1_swap');
+            const host = document.getElementById('combo1-rolls');
+            if (!box || !host) return;
+            host.innerHTML = combo1RollsHtml(box.checked);
+            refreshModalPrice();
+        }
+
         function createLabel(text) {
              return `<p class="text-brand font-bold mb-3 uppercase text-sm tracking-wider">${text}</p>`;
         }
@@ -901,6 +929,8 @@
             if (fries && fries.checked) extra += currentItem.options.friesDelta || 0;
             const sides = document.getElementById('extra_sides');
             if (sides && sides.checked) extra += currentItem.options.sidesDelta || 0;
+            const swap = document.getElementById('combo1_swap');
+            if (swap && swap.checked) extra += currentItem.options.frySwapDelta || 0;
             return extra;
         }
 
@@ -941,6 +971,12 @@
             if (sidesCheck && sidesCheck.checked) {
                 extraPrice += currentItem.options.sidesDelta;
                 finalOptions.push('Con papas y arroz frito');
+            }
+
+            const swapCheck = document.getElementById('combo1_swap');
+            if (swapCheck && swapCheck.checked) {
+                extraPrice += currentItem.options.frySwapDelta;
+                finalOptions.unshift('Cambio: 2 fritos y 1 fresco');
             }
 
             const note = document.getElementById('item_note').value;
@@ -1118,7 +1154,10 @@
             document.getElementById('photo-viewer-name').textContent = item.name;
             let meta = item.desc || '';
             if (item.options && item.options.friesDelta) meta = `Sin papas $${item.price} · con papas $${item.price + item.options.friesDelta}`;
-            else if (item.options && item.options.sidesDelta) meta = `$${item.price} · con papas y arroz $${item.price + item.options.sidesDelta}`;
+            else if (item.options && item.options.sidesDelta) {
+                meta = `$${item.price} · con papas y arroz $${item.price + item.options.sidesDelta}`;
+                if (item.options.frySwapDelta) meta += ` · 2 fritos y 1 fresco +$${item.options.frySwapDelta}`;
+            }
             else meta = meta ? `$${item.price} · ${meta}` : `$${item.price}`;
             document.getElementById('photo-viewer-meta').textContent = meta;
             viewer.hidden = false;
